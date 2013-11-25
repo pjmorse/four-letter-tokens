@@ -1,12 +1,11 @@
 class Checker
   require './word.rb'
-  require './sequence.rb'
 
   # Gets a dictionary file as input
   def initialize(filename)
     @infile = filename
     @seq_count = 0
-    @found_sequences = []
+    @found_sequences = {}
     puts "#{check_file} sequences found."
     write_results
   end
@@ -44,23 +43,16 @@ class Checker
         if check_sequence(seq)
           # If not found, add to sequences array
           @seq_count = @seq_count + 1
-          @found_sequences << Sequence.new(seq, word.chop)
+          @found_sequences[seq] = word.chop
         end
       end
     end
     return @seq_count
   end
 
+  # Check sequences against previously found sequences
   def check_sequence(test_seq)
-    # For each word, check sequences against sequences file
-    unique = true
-    @found_sequences.each do |known_seq|
-      if known_seq.get_token == test_seq
-        unique = false
-        break
-      end
-    end
-    return unique
+    return !@found_sequences.has_key?(test_seq)
   end
 
   # Output @found_sequences array to files
@@ -68,9 +60,9 @@ class Checker
     unless @found_sequences.empty?
       open_sequence_file
       open_words_file
-      @found_sequences.each do |seq|
-        @sequences.write "#{seq.get_token}\n"
-        @words.write "#{seq.get_word}\n"
+      @found_sequences.each_pair do |sequence, word|
+        @sequences.write "#{sequence}\n"
+        @words.write "#{word}\n"
       end
       @sequences.close
       @words.close
